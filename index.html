@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Mental Health Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            margin-bottom: 1rem;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            resize: none;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            margin-top: 1rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>AI Mental Health Assistant</h2>
+        <p>Type your thoughts below to get a sentiment analysis.</p>
+        <textarea id="textInput" placeholder="Enter your text here..."></textarea>
+        <button onclick="getPrediction()">Analyze</button>
+        <p id="result">Result will appear here.</p>
+    </div>
+
+    <script>
+    // Function to provide recommendations based on sentiment
+    function getRecommendation(sentiment) {
+        let recommendation = "";
+        if (sentiment === 'suicide' || sentiment === 'depression') {
+            recommendation = "It sounds like you're going through a tough time. Please consider seeking professional help.";
+        } else if (sentiment === 'anxiety') {
+            recommendation = "Try some deep breathing exercises. Inhale deeply for four counts, hold for four, and exhale slowly for six counts.";
+        } else { // For other sentiments like 'sadness', 'stress'
+            recommendation = "Don't be afraid to talk to someone you trust. Taking a break can also help.";
+        }
+        return recommendation;
+    }
+
+    // Main function to get sentiment prediction from backend
+    async function getPrediction() {
+        const textInput = document.getElementById('textInput').value;
+        const resultElement = document.getElementById('result');
+
+        if (!textInput) {
+            resultElement.innerText = "Please enter some text.";
+            return;
+        }
+
+        // Show a loading message
+        resultElement.innerText = "Analyzing...";
+
+        try {
+            const response = await fetch('http://127.0.0.1:5000/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text: textInput })
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                resultElement.innerText = "Error: " + data.error;
+            } else {
+                // Get recommendation based on predicted sentiment
+                const recommendation = getRecommendation(data.sentiment);
+                resultElement.innerText = `Sentiment: ${data.sentiment}.\nRecommendation: ${recommendation}`;
+            }
+
+        } catch (error) {
+            resultElement.innerText = "Could not connect to the server.";
+            console.error("Error:", error);
+        }
+    }
+</script>
+</body>
+</html>
